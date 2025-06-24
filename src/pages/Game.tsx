@@ -6,6 +6,7 @@ import PlayerAvatar from '@/components/PlayerAvatar';
 import DiscoveryModal from '@/components/DiscoveryModal';
 import { Wallet, Backpack } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Player {
   id: string;
@@ -26,7 +27,9 @@ interface Discovery {
 }
 
 const Game = () => {
+  const { signOut } = useAuth();
   const navigate = useNavigate();
+
   const mapRef = useRef<HTMLDivElement>(null);
   const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 50 });
   const [otherPlayers] = useState<Player[]>([
@@ -79,6 +82,11 @@ const Game = () => {
     checkForDiscoveries();
   }, [playerPosition]);
 
+  const handleLogout = async () => {
+    await signOut(); // This removes the Supabase session/token
+    navigate('/login'); // Redirect to login page after logout
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-200 to-green-200 relative overflow-hidden">
       {/* Top UI Bar */}
@@ -110,6 +118,13 @@ const Game = () => {
             size="sm"
           >
             <Backpack className="w-4 h-4" />
+          </Button>
+          <Button 
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white"
+            size="sm"
+          >
+            Logout
           </Button>
         </div>
       </div>
