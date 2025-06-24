@@ -1,34 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signUp, user, loading } = useAuth();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/game');
+    }
+  }, [user, loading, navigate]);
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Integrate with Supabase authentication
-    console.log('Register attempt:', formData);
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
       return;
     }
-    navigate('/game');
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await signUp(formData.email, formData.password, formData.name);
+      
+      if (error) {
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Welcome to EcoExplorer!",
+          description: "Account created successfully. You can now start exploring!"
+        });
+        navigate('/game');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-200 to-blue-200 flex items-center justify-center">
+        <div className="text-2xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-200 to-blue-200 flex items-center justify-center p-4">
@@ -49,6 +108,7 @@ const Register = () => {
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Enter your full name"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -61,6 +121,7 @@ const Register = () => {
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="Enter your email"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -73,6 +134,7 @@ const Register = () => {
               onChange={(e) => handleInputChange('password', e.target.value)}
               placeholder="Create a password"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -85,11 +147,16 @@ const Register = () => {
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
               placeholder="Confirm your password"
               required
+              disabled={isLoading}
             />
           </div>
 
-          <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
-            Create Account
+          <Button 
+            type="submit" 
+            className="w-full bg-green-600 hover:bg-green-700"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
 
@@ -100,15 +167,10 @@ const Register = () => {
               variant="link" 
               className="p-0 h-auto text-green-600 hover:text-green-700"
               onClick={() => navigate('/login')}
+              disabled={isLoading}
             >
               Sign in
             </Button>
-          </p>
-        </div>
-
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-700 text-center">
-            🔗 Ready for Supabase integration
           </p>
         </div>
       </Card>
