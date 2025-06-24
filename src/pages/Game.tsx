@@ -49,8 +49,8 @@ const Game = () => {
 
   const handleJoystickMove = (direction: { x: number; y: number }) => {
     setPlayerPosition(prev => ({
-      x: Math.max(0, Math.min(100, prev.x + direction.x * 2)),
-      y: Math.max(0, Math.min(100, prev.y + direction.y * 2))
+      x: Math.max(0, Math.min(100, prev.x + direction.x * 0.5)),
+      y: Math.max(0, Math.min(100, prev.y + direction.y * 0.5))
     }));
   };
 
