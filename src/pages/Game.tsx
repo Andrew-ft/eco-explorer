@@ -50,12 +50,14 @@ const Game = () => {
   const [coins, setCoins] = useState(0);
   const [points, setPoints] = useState(0);
 
-  const handleJoystickMove = (direction: { x: number; y: number }) => {
-    setPlayerPosition(prev => ({
-      x: Math.max(0, Math.min(100, prev.x + direction.x * 0.5)),
-      y: Math.max(0, Math.min(100, prev.y + direction.y * 0.5))
-    }));
-  };
+const handleJoystickMove = (direction: { x: number; y: number }) => {
+  const step = 0.1; 
+  setPlayerPosition(prev => ({
+    x: Math.max(0, Math.min(100, prev.x + direction.x * step)),
+    y: Math.max(0, Math.min(100, prev.y + direction.y * step)),
+  }));
+};
+
 
   const checkForDiscoveries = () => {
     discoveries.forEach(discovery => {
